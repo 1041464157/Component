@@ -78,7 +78,7 @@
     </style>
     <script>
         /*
-         * 弹窗的配置参数，这些都给用户写的
+         * 弹窗的配置参数
          * 	id:0,
          width:400,
          height:200,
@@ -139,7 +139,7 @@
             }
         };
         ;(function(window,undefined){
-            //声明一个变量，存放的是构造函数，把这个变量做为window身上的属性
+            //声明一个变量，存放构造函数，把这个变量做为window身上的属性
             var Dialog=function(){
                 this.settings={
                     id:0,
@@ -158,19 +158,11 @@
                 dialogId:{},			//在原型身上放一个对象用来存储每一个弹窗对应的id
                 init:function(opt){
                     var opt=opt||this.settings;
-                    for(var attr in opt){	//这里要in opt，避免用户一个参数都没有写会找不到内容
+                    for(var attr in opt){	//这里用in opt，避免用户一个参数都没有写会找不到内容
                         if(this.settings.hasOwnProperty(attr)){
                             this.settings[attr]=opt[attr];
                         }
                     }
-                    /*
-                     * 防止连续点击都会弹窗
-                     * 	1、给每一个框都对应一个id，它的值是布尔值
-                     * 		true		说明没点击，可以点
-                     * 		false		说明已点击，不能再点
-                     * 	2、只有当它的id的值为true的时候才可以创建，创建完了以后要让它的值为false
-                     * 	3、在点击关闭按钮后，要让它的值再为true，才能进行下一次的点击
-                     */
 
                     //如果这个值为undefined，说明对象里没有这个属性，也代表是首次点击
                     if(this.dialogId[this.settings.id]==undefined){
@@ -188,8 +180,7 @@
                 },
                 create:function(){
                     var This=this;
-                    //这个方法是用来创建DOM元素的
-                    this.dialog=document.createElement("div");		//它就是弹窗的父级
+                    this.dialog=document.createElement("div");
                     this.dialog.className='dialogWrap';
                     this.dialog.innerHTML='<div class="dialogHeader"><h3>'+this.settings.title+'</h3><span>x</span></div><div class="dialogMain">'+this.settings.content+'</div>';
 
