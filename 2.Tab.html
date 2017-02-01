@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>自定义Tab</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        ol, ul, li {
+            list-style: none;
+        }
+        h2 {
+            width: 400px;
+            margin: 30px auto 10px auto;
+            font-size: 18px;
+            font-family: "微软雅黑";
+            color: #333;
+        }
+        .table_card {
+            width: 420px;
+            margin: 0 auto;
+            margin-top: 20px;
+        }
+        .table_card .tab {
+            height: 37px;
+            font-size: 14px;
+            border-bottom: 1px #e1e1e1 solid;
+        }
+        .table_card .tabCon {
+            height:150px;
+            background: #80b600;
+            padding: 15px;
+            color:#fff;
+            border-bottom: 1px #e1e1e1 solid;
+            border-left: 1px #e1e1e1 solid;
+            border-right: 1px #e1e1e1 solid;
+        }
+        .table_card .tab li {
+            float: left;
+            height: 36px;
+            line-height: 36px;
+            padding: 0 25px;
+            margin-right: 5px;
+            background: #f5f5f5;
+            color:#999;
+            font-family: Arial;
+            border-top: 1px #e1e1e1 solid;
+            border-left: 1px #e1e1e1 solid;
+            border-right: 1px #e1e1e1 solid;
+        }
+        .table_card .tab .active {
+            height: 37px;
+            background: #80b600;
+            color: #fff;
+        }
+        .table_card .tabCon .on {
+            display: block;
+        }
+        .table_card .tabCon div {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<h2>样式一：点击事件触发</h2>
+<div id='tab1' class="table_card">
+    <ul class="tab">
+        <li class="active">tab1</li>
+        <li>tab2</li>
+        <li>tab3</li>
+    </ul>
+    <div class="tabCon">
+        <div class="on">tab1内容</div>
+        <div>tab2内容</div>
+        <div>tab3内容</div>
+    </div>
+</div>
+
+<h2>样式二：点击事件触发，自动轮播</h2>
+<div id='tab2' class="table_card">
+    <ul class="tab">
+        <li class="active">tab1</li>
+        <li>tab2</li>
+        <li>tab3</li>
+    </ul>
+    <div class="tabCon">
+        <div class="on">tab1内容</div>
+        <div>tab2内容</div>
+        <div>tab3内容</div>
+    </div>
+</div>
+<script>
+
+    //        声明一个Tab构造函数
+    var Tab=function () {
+        this.settings={
+            id:'id',//需要做tab效果的元素id
+            autoplay:true,//是否自动轮播
+            time:1000//轮播时间间隔
+        }
+
+    }
+    Tab.prototype={
+        constructor:Tab,
+        init:function (opt) {
+            var opt=opt||this.settings;
+            for(var attr in opt){
+                if(this.settings.hasOwnProperty(attr)){
+                    this.settings[attr]=opt[attr];
+                }
+            }
+            var obj=document.getElementById(this.settings.id);
+            this.lis=obj.querySelectorAll('li');
+            this.divs=obj.querySelectorAll(".tabCon div");
+            this.length=this.lis.length;
+            this.n=0;//获得焦点的元素下标，后面通过更改n的值，实现自动轮播效果。
+
+            if(this.settings.autoplay){
+                this.autoPlay();
+            }
+
+            var This=this;
+            for(var i=0;i<this.length;i++){
+                this.lis[i].index=i;
+                this.lis[i].onclick=function () {
+                    This.n=this.index;
+                    This.play();
+                    clearInterval(This.timer);//如果点击了手动点击了栏目则取消自动轮播
+                }
+            }
+        },
+        play:function () {
+            for(var i=0;i<this.length;i++){
+                if(this.lis[i].className=='active'){
+                    this.lis[i].setAttribute('class','');
+                }
+                if(this.divs[i].className=='on'){
+                    this.divs[i].setAttribute('class','');
+                }
+            }
+            this.lis[this.n].className='active';
+            this.divs[this.n].className='on';
+        },
+        autoPlay:function () {
+            var This=this;
+            This.timer=setInterval(function () {
+                This.n++;
+                if(This.n==This.length){
+                    This.n=0;
+                }
+                This.play();
+            },this.settings.time);
+        }
+    }
+
+    //效果1
+    var tab1=new Tab();
+    tab1.init({
+        id:'tab1',
+        autoplay:false
+    });
+    //效果2
+    var tab2=new Tab();
+    tab2.init({
+        id:'tab2',
+        autoplay:true,
+        time:1000
+    });
+</script>
+</body>
+</html>
