@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>自定义滚动条</title>
+		<style>
+			*{
+				margin: 0;
+				padding: 0;
+			}
+            h2 {
+                width: 490px;
+                margin: 30px auto 10px auto;
+                font-size: 18px;
+                font-family: "微软雅黑";
+                color: #333;
+            }
+			#box1{
+                width: 450px;
+                border: 2px solid #000000;
+                border-radius: 0px;
+                margin: auto;
+                padding: 18px;
+			}
+
+			.text{
+                width: 418px;
+                height: 283px;
+                position: relative;
+                float: left;
+                overflow: hidden;
+			}
+			.text div{
+				padding: 10px;
+                color: #333333;
+                font-family: Arial, Helvetica, sans-serif;
+                font-size: 14px;
+                text-indent: 2em;
+                position: absolute;
+                top: 0;
+			}
+			.bar{
+                width: 10px;
+                float: right;
+                margin-left: 10px;
+                position: relative;
+			}
+			.bar span{
+				width: 100%;
+				height: 20px;
+				background: #ccc;
+				display: block;
+				position: relative;
+
+			}
+			.bar span:first-child:before{
+				content: '';
+				position: absolute;
+				top: -5px;
+				right: 0;
+				left: 0;
+				margin: auto;
+
+				width: 0;
+				height: 0;
+				border-width: 10px;
+				border-style: solid;
+				border-color: transparent transparent #000;
+				margin-bottom: 3px;
+			}
+			.bar span:last-child:before{
+				content: '';
+				position: absolute;
+				top: 5px;
+				right: 0;
+				left: 0;
+				margin: auto;
+
+				width: 0;
+				height: 0;
+				border-width: 10px;
+				border-style: solid;
+				border-color: #000 transparent transparent;
+				margin-bottom: 3px;
+			}
+			.bar>div{
+                width: 10px;
+                height: 283px;
+                background-color: rgb(230, 230, 230);
+                border-radius: 5px;
+                position: relative;
+			}
+			.slide{
+                width: 10px;
+                height: 100px;
+                background-color: rgb(17, 17, 17);
+                border-radius: 5px;
+                position: absolute;
+                left: 0;
+                top: 0;
+			}
+            .clearfix:after{
+                content: '';
+                display: block;
+                clear: both;
+            }
+		</style>
+	</head>
+	<body>
+        <h2>自定义滚动条，具有拖拽，滚轮事件和键盘事件，滚动条高度根据文本高度自动调节</h2>
+		<div id="box1" class="clearfix">
+			<div class="text">
+				<div>
+                    <p>It is a long established fact that a reader will be distracted by the readable
+                        content of a page when looking at its layout. The point of using Lorem Ipsum is
+                        that it has a more-or-less normal distribution of letters, as opposed to using
+                        'Content here, content here', making it look like readable English. Many desktop
+                        publishing packages and web page editors now use Lorem Ipsum as their default
+                        model text, and a search for 'lorem ipsum' will uncover many web sites still in
+                        their infancy. Various versions have evolved over the years, sometimes by accident,
+                        sometimes on purpose (injected humour and the like).
+                    </p>
+                    <p>
+                        There are many variations of passages of Lorem Ipsum available, but the majority have
+                        suffered alteration in some form, by injected humour, or randomised words which don't
+                        look even slightly believable. If you are going to use a passage of Lorem Ipsum, you
+                        need to be sure there isn't anything embarrassing hidden in the middle of text. All the
+                        Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary,
+                        making this the first true generator on the Internet. It uses a dictionary of over 200
+                        Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum
+                        which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition,
+                        injected humour, or non-characteristic words etc.
+                    </p>
+                    <p>
+                        There are many variations of passages of Lorem Ipsum available, but the majority have
+                        suffered alteration in some form, by injected humour, or randomised words which don't
+                        look even slightly believable. If you are going to use a passage of Lorem Ipsum, you
+                        need to be sure there isn't anything embarrassing hidden in the middle of text. All the
+                        Lorem Ipsum generators on the Internet tend to repeat predefined chunks as necessary,
+                        making this the first true generator on the Internet. It uses a dictionary of over 200
+                        Latin words, combined with a handful of model sentence structures, to generate Lorem Ipsum
+                        which looks reasonable. The generated Lorem Ipsum is therefore always free from repetition,
+                        injected humour, or non-characteristic words etc.
+                    </p>
+                </div>
+			</div>
+			<div class="bar">
+				<!--<span></span>-->
+				<div>
+					<div class="slide"></div>
+				</div>
+				<!--<span></span>-->
+			</div>
+		</div>
+        <script>
+            var box=document.getElementById('box1');
+            var slide=box.querySelector('.slide');
+            var slideWrap=slide.offsetParent;
+            var text=box.querySelector('.text');
+            var textCon=text.querySelector('div');
+
+            var t=0;   //滚动条走的距离
+            var canScroll=true;    //能否滚动
+            var timer;
+
+ //让滚动条的高度随着内容的高度来进行变化
+
+            //用文字内容的高度除上文字父级的高度，得出的结果是超出的倍数
+            //超出的倍数越大，滑块的高度越小。超出的倍数越小，滑块的高度就越大
+
+            var scale=textCon.offsetHeight/text.offsetHeight;
+
+            if(scale<0){
+                slideWrap.style.height=0;
+                canScroll=false;
+            }else if(scale>20){
+                slide.style.height=20+'px';
+            }
+            console.log(scale);
+            slide.style.height=slideWrap.offsetHeight/scale+'px';
+
+//添加拖拽功能
+            var maxHeight=slideWrap.offsetHeight-slide.offsetHeight;  //可以滚动的最远距离
+            slide.onmousedown=function (ev) {
+
+                var disY=ev.clientY-slide.offsetTop;
+                document.onmousemove=function (ev) {
+                    t=ev.clientY-disY;
+                    scroll();
+                };
+                document.onmouseup=function () {
+                    this.onmousemove=null;
+                };
+                ev.cancelBubble=true;
+                return false;
+            };
+
+
+
+//滚轮事件
+            //判断鼠标滚轮滚动方向，执行对应向上向下的文字滚动
+            function myScroll(obj,fnUp,fnDown){
+                obj.onmousewheel=fn;
+                obj.addEventListener('DOMMouseScroll',fn);
+                function fn(ev){
+                    if(ev.wheelDelta>0 || ev.detail<0){
+                        fnUp.call(obj);
+                    }else{
+                        fnDown.call(obj);
+                    }
+                    ev.preventDefault();
+                    return false;
+                }
+            }
+            myScroll(box,upFn,downFn);
+           // 向上滚动
+            function upFn() {
+                if(!canScroll){     //表示内容区已经在最顶部不能向上滚动或者内容区高度不够滚动条不出现
+                    return;
+                }else{
+                    t-=10;
+                    scroll();
+                }
+            }
+           //向下滚动
+            function downFn() {
+                if(!canScroll){     //表示内容区已经在最底部不能向下滚动
+                    return;
+                }else{
+                    t+=10;
+                    scroll();
+                }
+            }
+//键盘事件
+            document.onkeydown=function (ev) {
+                ev=ev||window.event;
+                console.log(ev.keyCode);
+                switch (ev.keyCode){
+                    case 38:
+                        upFn();
+                        break;
+                    case 40:
+                        downFn();
+                        break;
+                    default:
+                        break;
+                }
+            };
+//给滑块区域添加点击事件
+            slideWrap.onmousedown=function (ev) {
+                //鼠标按的Y轴距离比滑块的最上面到可视区的距离小，往上走。否则往下走
+                if(ev.clientY<slide.getBoundingClientRect().top){
+                    console.log('向上');
+                    timer=setInterval(function () {
+                        t--;
+                        console.log(t);
+                        if(t<2){
+                            clearInterval(timer);
+                        }
+                        if(t<ev.clientY-slideWrap.getBoundingClientRect().top) {
+                            t = ev.clientY - slideWrap.getBoundingClientRect().top;
+                            clearInterval(timer);
+                            console.log(t);
+                        }
+//                        console.log(t,ev.clientY,slideWrap.getBoundingClientRect().top);
+                        scroll();
+                    },3);
+
+
+                }else{
+                    console.log('向下');
+                    timer=setInterval(function () {
+                        t++;
+                        if(t>ev.clientY-slideWrap.getBoundingClientRect().top||t>maxHeight) {
+                            t = ev.clientY - slideWrap.getBoundingClientRect().top;
+                            clearInterval(timer);
+                        }
+                        scroll();
+                        console.log(t);
+                    },3);
+                }
+            };
+
+            //滑块功能的主体内容
+            function scroll() {
+                if(t<0){
+                    t=0;
+                }
+                if(t>maxHeight){
+                    t=maxHeight;
+                }
+                var scaleY=t/maxHeight;
+                slide.style.top=t+'px';
+                textCon.style.top=-scaleY*(textCon.offsetHeight-text.offsetHeight)+'px';
+            }
+
+        </script>
+	</body>
+</html>
